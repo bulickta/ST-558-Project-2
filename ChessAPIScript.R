@@ -55,6 +55,7 @@ queryChess <- function(category,chessType,username,year,month,subcategory=NULL){
     chessInfo <- as_tibble(parsed$games) 
     if (nrow(chessInfo) != 0){
       chessInfo <- chessInfo |>
+      filter(time_class==tolower(chessType)) |>
       mutate(white.user=white$username,black.user=black$username,white.rating=white$rating,black.rating=black$rating,white.result=white$result,black.result=black$result) |>
       select(url:rules,white.user:black.result)
     chessInfo
@@ -67,14 +68,9 @@ queryChess <- function(category,chessType,username,year,month,subcategory=NULL){
 
 test1 <- queryChess(category="leaderboards",chessType="Rapid")
 test2 <- queryChess(category = "player", subcategory = "stats", username = "tolkienatic", chessType = "Blitz")
-test3 <- queryChess(category = "player", subcategory = "games", username = "tolkienatic", year="2024", month="01")
+test3 <- queryChess(category = "player", subcategory = "games", username = "tolkienatic", year="2023", chessType="Rapid",month="01")
 test4 <- queryChess(category="leaderboards",chessType="Blitz")
 test5 <- queryChess(category="leaderboards",chessType="Bullet")
-test1
-test2 
-test3
-test4
-test5
 
 ###Lifetime user record visual
 visout1 <- test2 |> 
