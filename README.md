@@ -11,4 +11,4 @@ install.packages(c("shiny","png","tidyverse","httr","jsonlite","DT"))
 
 
 GitHub run command:
-runGitHub(repo = "ST-558-Project-2",username = "bulickta")
+shiny::runGitHub(repo = "ST-558-Project-2",username = "bulickta")
