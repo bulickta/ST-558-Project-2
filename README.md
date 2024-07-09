@@ -1,5 +1,5 @@
 Purpose:
-  The goal of this app is to enable a user to explore some of the Chess data provided by the Chess.com API. The current default user is my personal chess.com account, but some additional famous accounts of note that could be fun to explore are: Hikaru Nakamura (username: Hikaru), Magnus Carlsen (username: MagnusCarlsen), and Arjun Erigaisi (username: GHANDEEVAM2003).
+  The goal of this app is to enable a user to explore some of the Chess data provided by the Chess.com API. The API contains both leaderboard data, listing top rated players in various categories, and player data, to look up stats and games from specific accounts. The current default account for the player-level data is my personal chess.com account, tolkienatic, but some famous accounts of note that could be fun to explore are: Hikaru Nakamura (username: Hikaru), Magnus Carlsen (username: MagnusCarlsen), and Arjun Erigaisi (username: GHANDEEVAM2003).
 
 
 Needed Packages:
