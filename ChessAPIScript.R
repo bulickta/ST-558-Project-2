@@ -10,15 +10,21 @@ queryChess <- function(category,chessType,username,year,month,subcategory=NULL){
     data <- GET(URL)
     parsed <- fromJSON(rawToChar(data$content))
     if(chessType=="Rapid"){
-      chessInfo <- as_tibble(parsed$live_rapid)
+      chessInfo <- as_tibble(parsed$live_rapid) |>
+        mutate(country=substr(country,nchar(country)-1,nchar(country))) |>
+        select(username,score,rank,country,title,win_count,loss_count,draw_count)
       chessInfo
     }
     else if(chessType=="Blitz"){
-      chessInfo <- as_tibble(parsed$live_blitz)
+      chessInfo <- as_tibble(parsed$live_blitz) |>
+        mutate(country=substr(country,nchar(country)-1,nchar(country))) |>
+        select(username,score,rank,country,title,win_count,loss_count,draw_count)
       chessInfo
     }
     else if(chessType=="Bullet"){
-      chessInfo <- as_tibble(parsed$live_bullet)
+      chessInfo <- as_tibble(parsed$live_bullet) |>
+        mutate(country=substr(country,nchar(country)-1,nchar(country))) |>
+        select(username,score,rank,country,title,win_count,loss_count,draw_count)
       chessInfo
     }
     else {
@@ -31,7 +37,8 @@ queryChess <- function(category,chessType,username,year,month,subcategory=NULL){
     parsed <- fromJSON(rawToChar(data$content))
     if(chessType=="Rapid"){
       chessInfo <- as_tibble_row(unlist(parsed$chess_rapid)) |>
-        mutate(last.rating= as.integer(last.rating),last.date= as.integer(last.date),last.rd= as.integer(last.rd),best.rating= as.integer(best.rating),best.date= as.integer(best.date),record.win= as.integer(record.win),record.loss= as.integer(record.loss),record.draw= as.integer(record.draw))
+        mutate(last.rating= as.integer(last.rating),last.date= as.integer(last.date),last.rd= as.integer(last.rd),best.rating= as.integer(best.rating),best.date= as.integer(best.date),record.win= as.integer(record.win),record.loss= as.integer(record.loss),record.draw= as.integer(record.draw)) |>
+        select(best.rating,record.win,record.loss,record.draw)
       chessInfo  
     }
     else if(chessType=="Blitz"){
@@ -55,10 +62,9 @@ queryChess <- function(category,chessType,username,year,month,subcategory=NULL){
     chessInfo <- as_tibble(parsed$games) 
     if (nrow(chessInfo) != 0){
       chessInfo <- chessInfo |>
-      filter(time_class==tolower(chessType)) |>
-      mutate(white.user=white$username,black.user=black$username,white.rating=white$rating,black.rating=black$rating,white.result=white$result,black.result=black$result) |>
-      select(url:rules,white.user:black.result)
-    chessInfo
+        filter(time_class==tolower(chessType)) |>
+        mutate(white.user=white$username,black.user=black$username,white.rating=white$rating,black.rating=black$rating,white.result=white$result,black.result=black$result)
+      chessInfo
     }else chessInfo <- tibble()
   }
   else {
@@ -66,19 +72,8 @@ queryChess <- function(category,chessType,username,year,month,subcategory=NULL){
   }
 }
 
-test1 <- queryChess(category="leaderboards",chessType="Rapid")
-test2 <- queryChess(category = "player", subcategory = "stats", username = "tolkienatic", chessType = "Blitz")
 test3 <- queryChess(category = "player", subcategory = "games", username = "tolkienatic", year="2023", chessType="Rapid",month="01")
-test4 <- queryChess(category="leaderboards",chessType="Blitz")
-test5 <- queryChess(category="leaderboards",chessType="Bullet")
 
-###Lifetime user record visual
-visout1 <- test2 |> 
-  rename(Win=record.win,Loss=record.loss,Draw=record.draw) |>
-  pivot_longer(cols=c(Win,Loss,Draw),names_to = "Record") |>
-  mutate(Record = as_factor(Record))
-g <- ggplot(visout1,aes(x=Record,y=value))
-  g+geom_col(aes(fill=Record))+labs(x="Record",y="Count",title="Lifetime Statistics")+theme(legend.position = "none")+theme(plot.title = element_text(hjust=0.5))
 
 ###Freq table Games as win/loss/tie
 tableOut1 <- test3 |>
@@ -130,39 +125,7 @@ tableOut4 <- test3 |>
   mutate(userSide = factor(userSide))
 
 ###Summary of leaderboard ELO across types
-test1 <- test1 |>
-  mutate(chessType = "Rapid")
-test4 <- test4 |>
-  mutate(chessType = "Blitz")
-test5 <- test5 |>
-  mutate(chessType = "Bullet")
-
-allLeaders <- bind_rows(test1,test4,test5) |>
-  select(chessType,score) |>
-  group_by(chessType) |>
-  summarize(meanELO = mean(score),sdELO = sd(score),medianELO = median(score),iqrELO=IQR(score)) |>
-  mutate(chessType = factor(chessType,levels=c("Rapid","Blitz","Bullet"))) |>
-  arrange(chessType)
-
-###Visual of ELO variation in a month
-visout2 <- test3 |>
-  mutate(userSide = ifelse(white.user!="tolkienatic","White","Black")) |>
-  mutate(userELO = ifelse(userSide=="White",white.rating,black.rating)) |>
-  select(userSide,userELO) |>
-  group_by(userSide)
-
-h <- ggplot(visout2,aes(x=userSide,y=userELO))
-h + geom_boxplot(aes(fill=userSide)) + labs(x="Side Played",y="ELO",title="Ranking by Side Played")+theme(legend.position = "none")+theme(plot.title = element_text(hjust=0.5))
-
-###Distribution of leaderboard ELO
-visout3 <- test1 |>
-  select(title,score) |>
-  filter(!is.na(title)) |>
-  mutate(title = factor(title,levels=c("IM","FM","CM","GM"))) |>
-  arrange(title)
-
-i <- ggplot(visout3,aes(x=score))
-i + geom_histogram(aes(fill=title),binwidth = 50) + labs(x="ELO",y="Count",title="Leaderboard Ranking Distribution")+scale_fill_discrete(name = "Chess Title")+theme(plot.title = element_text(hjust=0.5))
+arrange(chessType)
 
 visout4 <- test3 |>
   arrange(desc(white.rating)) |>
