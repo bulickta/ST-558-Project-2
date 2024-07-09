@@ -161,7 +161,7 @@ function(input, output, session) {
   )
   
   h <- reactive({h <- ggplot(queryChess(category = "player", chessType =input$gameType3, username = input$user3, year =input$year3, month = input$month3, subcategory = "games") |>
-    mutate(userSide = ifelse(white.user!="tolkienatic","White","Black")) |>
+    mutate(userSide = ifelse(white.user==input$user3,"White","Black")) |>
     mutate(userELO = ifelse(userSide=="White",white.rating,black.rating)) |>
     select(userSide,userELO) |>
     group_by(userSide),aes(x=userSide,y=userELO))})
@@ -181,14 +181,14 @@ function(input, output, session) {
   )
    
   j <- reactive({i <- ggplot(queryChess(category = "player", chessType =input$gameType3, username = input$user3, year =input$year3, month = input$month3, subcategory = "games")|>
-      mutate(userSide = ifelse(white.user!="tolkienatic","White","Black")) |>
+      mutate(userSide = ifelse(white.user==input$user3,"White","Black")) |>
       mutate(userELO = ifelse(userSide=="White",white.rating,black.rating), oppELO = ifelse(userSide!="White",white.rating,black.rating)) |>
       select(userELO,oppELO,end_time) |>
       group_by(end_time) |>
       summarize(meanuserELO = mean(userELO),meanoppELO=mean(oppELO)),aes(x=end_time))}) 
   
   output$plot4 <- renderPlot(
-    j()+geom_line(aes(y=meanuserELO,color="User")) + geom_line(aes(y=meanoppELO,color="Opponent"))+labs(x="Date",y="ELO",colour="Player",title="Comparison of ELO Fluctuation of Player and Opponent")+theme(plot.title = element_text(hjust=0.5))
+    j()+geom_line(aes(y=meanuserELO,color="User")) + geom_line(aes(y=meanoppELO,color="Opponent"))+labs(x="Date",y="ELO",colour="Player",title="Comparison of ELO Fluctuation of Player and Opponents")+theme(plot.title = element_text(hjust=0.5))
   )
   
   output$table5 <- renderTable(
