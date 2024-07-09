@@ -3,7 +3,6 @@ library(png)
 library(tidyverse)
 library(httr)
 library(jsonlite)
-library(chess)
 library(DT)
 
 queryChess <- function(category,chessType,username,year,month,chessTitle="All",subcategory=NULL){
